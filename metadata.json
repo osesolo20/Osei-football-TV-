@@ -1,0 +1,8 @@
+{
+  "name": "Copy of Osei Football TV",
+  "description": "Get live, AI-powered football commentary.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

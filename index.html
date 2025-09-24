@@ -1,0 +1,206 @@
+<!!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Osei Football TV</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <link rel="stylesheet" href="index.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.sh/@google/genai@^0.7.0"
+      }
+    }
+  </script>
+  <script type="module" src="index.tsx"></script>
+</head>
+<body>
+
+  <div id="prematch-setup">
+    <div class="setup-panel">
+      <h2>Pre-Match Setup</h2>
+      <form id="score-form">
+        <div class="team-setup-grid">
+          <!-- Home Team -->
+          <div class="team-setup">
+            <label for="home-team-input">Home Team</label>
+            <img id="home-team-logo-preview" src="" alt="Home team logo preview" class="team-logo-preview">
+            <input type="text" id="home-team-input" placeholder="Enter Team Name">
+            <div class="color-score-inputs">
+                <input type="color" id="home-primary-color-input" value="#FFFFFF" title="Home Primary Color">
+                <input type="color" id="home-secondary-color-input" value="#00E676" title="Home Secondary Color">
+                <input type="number" id="home-score-input" placeholder="0" value="0" min="0">
+            </div>
+          </div>
+          <!-- Away Team -->
+          <div class="team-setup">
+            <label for="away-team-input">Away Team</label>
+            <img id="away-team-logo-preview" src="" alt="Away team logo preview" class="team-logo-preview">
+            <input type="text" id="away-team-input" placeholder="Enter Team Name">
+            <div class="color-score-inputs">
+              <input type="color" id="away-primary-color-input" value="#FFFFFF" title="Away Primary Color">
+              <input type="color" id="away-secondary-color-input" value="#1E1E1E" title="Away Secondary Color">
+              <input type="number" id="away-score-input" placeholder="0" value="0" min="0">
+            </div>
+          </div>
+        </div>
+        <div class="match-info-setup">
+            <label for="match-info-input">Match Info (e.g., Competition, Time)</label>
+            <input type="text" id="match-info-input" placeholder="Premier League, 1'">
+        </div>
+        <button type="submit" id="update-score-button">Start Broadcast</button>
+      </form>
+      <div class="saved-matches-panel">
+        <h3>Saved Matches</h3>
+        <ul id="saved-matches-list">
+          <!-- Populated by JS -->
+        </ul>
+        <p id="no-saved-matches" class="hidden">No saved matches found.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="live-broadcast-view" class="hidden">
+    <header>
+      <h1>Osei Football TV <span id="live-indicator">LIVE</span></h1>
+      <div id="match-timer-display">00:00</div>
+      <div id="scoreboard">
+        <img id="home-team-logo" src="" alt="Home team logo" class="team-logo">
+        <span id="home-team-display">HOME</span>
+        <span id="score-display">0 - 0</span>
+        <span id="away-team-display">AWAY</span>
+        <img id="away-team-logo" src="" alt="Away team logo" class="team-logo">
+      </div>
+      <div id="match-info">LIVE COMMENTARY</div>
+    </header>
+    <div id="match-report-bar" class="hidden">
+      <span>Viewing Saved Match Report</span>
+      <button id="start-new-match-button">Start New Match</button>
+    </div>
+    <main id="main-content">
+      <div id="stats-panel">
+        <h3>Match Stats</h3>
+        <div id="summary-container" class="hidden">
+          <h4>Match Summary</h4>
+          <div id="summary-content"></div>
+        </div>
+        <div class="stat-item possession">
+          <div class="stat-label">
+            <span>POSSESSION</span>
+          </div>
+          <div class="possession-bar-container">
+            <div id="possession-home-bar" class="possession-bar"></div>
+            <div id="possession-away-bar" class="possession-bar away"></div>
+          </div>
+           <div class="stat-values">
+            <span id="possession-home-value">50%</span>
+            <span id="possession-away-value">50%</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">
+            <span id="stats-home-team">HOME</span>
+            <span>SHOTS ON TARGET</span>
+            <span id="stats-away-team">AWAY</span>
+          </div>
+          <div class="stat-values">
+            <span id="shots-home-value">0</span>
+            <span class="stat-icon">🎯</span>
+            <span id="shots-away-value">0</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">
+            <span id="stats-home-team-2">HOME</span>
+            <span>FOULS</span>
+            <span id="stats-away-team-2">AWAY</span>
+          </div>
+          <div class="stat-values">
+            <span id="fouls-home-value">0</span>
+            <span class="stat-icon">⚠️</span>
+            <span id="fouls-away-value">0</span>
+          </div>
+        </div>
+      </div>
+      <div id="commentary-feed" aria-live="polite"></div>
+      <div id="highlights-panel">
+        <h3>Highlight Reel</h3>
+        <div id="highlight-reel">
+          <p id="highlights-placeholder">Generated highlights will appear here!</p>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <div id="controls-bar">
+        <button id="save-match-button">Save Match</button>
+        <button id="finish-match-button">Finish Match</button>
+        <button id="toggle-score-form-button">Match Setup</button>
+        <div class="toggle-switch">
+          <input type="checkbox" id="autoplay-toggle">
+          <label for="autoplay-toggle">Autoplay Highlights</label>
+        </div>
+        <form id="player-track-form">
+            <label for="player-track-input" class="sr-only">Track Player</label>
+            <input type="text" id="player-track-input" placeholder="Track a player...">
+            <button type="submit" id="player-track-button" aria-label="Track Player">Track</button>
+        </form>
+      </div>
+      <div id="ticker-wrap">
+          <div id="ticker">
+              Welcome to Osei Football TV! Your home for live AI commentary... Set the score and describe the action...
+          </div>
+      </div>
+       <div id="tracking-info" class="hidden">
+        <span>Tracking: <strong id="tracked-player-name"></strong></span>
+        <button id="clear-tracking-button" aria-label="Stop tracking player">&times;</button>
+      </div>
+      <form id="prompt-form">
+        <div class="team-selector">
+          <input type="radio" id="team-selector-home" name="team-selector" value="home">
+          <label for="team-selector-home" id="team-selector-home-label">HOME</label>
+          <input type="radio" id="team-selector-neutral" name="team-selector" value="neutral" checked>
+          <label for="team-selector-neutral">Neutral</label>
+          <input type="radio" id="team-selector-away" name="team-selector" value="away">
+          <label for="team-selector-away" id="team-selector-away-label">AWAY</label>
+        </div>
+        <div id="media-preview-container" class="hidden">
+            <img id="media-preview-thumbnail" src="" alt="Captured media thumbnail">
+            <button type="button" id="remove-media-button" aria-label="Remove media">&times;</button>
+        </div>
+        <label for="prompt-input" class="sr-only">Describe the action on the pitch</label>
+        <input type="text" id="prompt-input" placeholder="What's happening on the pitch?" required autocomplete="off" aria-label="Describe the action on the pitch">
+        <button type="button" id="camera-button" aria-label="Open camera">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M9.75 9.75a.75.75 0 0 1 1.5 0v4.5a.75.75 0 0 1-1.5 0v-4.5Z"/><path d="M12 7.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5h-4.5Z"/><path fill-rule="evenodd" d="M3.578 2.578a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.06-1.06l-2.25-2.25ZM5.938 21.062a.75.75 0 0 0 1.06-1.06l-2.25-2.25a.75.75 0 0 0-1.06 1.06l2.25 2.25ZM21.062 5.938a.75.75 0 0 0-1.06-1.06l-2.25 2.25a.75.75 0 0 0 1.06 1.06l2.25-2.25ZM17.75 12a.75.75 0 0 1-.75.75h-4.5a.75.75 0 0 1 0-1.5h4.5a.75.75 0 0 1 .75.75ZM18.25 18.25a.75.75 0 0 0 1.06 1.06l2.25-2.25a.75.75 0 0 0-1.06-1.06l-2.25 2.25ZM12 3.75a8.25 8.25 0 1 0 0 16.5 8.25 8.25 0 0 0 0-16.5ZM2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Z" clip-rule="evenodd"/></svg>
+        </button>
+        <button type="submit" id="submit-button" aria-label="Send prompt">Send</button>
+      </form>
+    </footer>
+  </div>
+
+  <div id="camera-modal" class="hidden">
+    <video id="camera-feed" autoplay playsinline muted></video>
+    <div id="camera-controls">
+        <button id="close-camera-button" aria-label="Close camera">&times;</button>
+        <button id="capture-photo-button" aria-label="Capture Photo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" /><path fill-rule="evenodd" d="M.75 4.5a3 3 0 0 1 3-3h16.5a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3H3.75a3 3 0 0 1-3-3v-15Zm3-1.5a1.5 1.5 0 0 0-1.5 1.5v15a1.5 1.5 0 0 0 1.5 1.5h16.5a1.5 1.5 0 0 0 1.5-1.5v-15a1.5 1.5 0 0 0-1.5-1.5H3.75Z" clip-rule="evenodd" /></svg>
+        </button>
+        <button id="toggle-record-button" aria-label="Start Recording">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm1.5 0a8.25 8.25 0 1 0 16.5 0 8.25 8.25 0 0 0-16.5 0Z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M12 1.5a.75.75 0 0 1 .75.75v5.19l4.72-2.1a.75.75 0 0 1 1.03.62V18a.75.75 0 0 1-1.03.62l-4.72-2.1v5.19A.75.75 0 0 1 12 22.5a.75.75 0 0 1-.75-.75v-21A.75.75 0 0 1 12 1.5Z" clip-rule="evenodd" /></svg>
+        </button>
+        <button id="switch-camera-button" aria-label="Switch Camera">
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.5 8.25a.75.75 0 0 1 .75.75v5.25a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" /><path d="M3.105 6.337a.75.75 0 0 1 1.06-1.06l3.612 3.612a.75.75 0 0 1-1.06 1.06L3.105 6.337ZM6.337 3.105a.75.75 0 0 1 1.06 1.06L3.785 7.777a.75.75 0 0 1-1.06-1.06L6.337 3.105Z" /><path fill-rule="evenodd" d="M8.25 2.5a.75.75 0 0 1 .75-.75h5.25a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM20.895 6.337a.75.75 0 0 1-1.06-1.06l-3.612 3.612a.75.75 0 0 1-1.06-1.06l3.612-3.612a.75.75 0 0 1 1.06 1.06ZM17.663 3.105a.75.75 0 0 1-1.06 1.06l3.612 3.612a.75.75 0 1 1-1.06 1.06L17.663 3.105Z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M15.75 21.5a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1 0-1.5H15a.75.75 0 0 1 .75.75Z" clip-rule="evenodd" /><path d="M11.25 4.5A6.75 6.75 0 1 0 11.25 18a6.75 6.75 0 0 0 0-13.5Z" /><path fill-rule="evenodd" d="M12 12.75a.75.75 0 0 1-.75-.75V7.5a.75.75 0 0 1 1.5 0v4.5a.75.75 0 0 1-.75.75Z" clip-rule="evenodd" /><path d="M13.78 15.31a.75.75 0 1 0-1.06-1.06l-2.22 2.22a.75.75 0 0 0 1.06 1.06l2.22-2.22Z" /></svg>
+        </button>
+    </div>
+    <div id="camera-preview" class="hidden">
+        <img id="photo-preview" src="" alt="Captured photo preview">
+        <video id="video-preview" src="" controls></video>
+        <div id="preview-controls">
+            <button id="retake-media-button">Retake</button>
+            <button id="use-media-button">Use Media</button>
+        </div>
+    </div>
+  </div>
+
+</body>
+</html>
